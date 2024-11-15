@@ -1,51 +1,36 @@
 package com.ajaxjs.springboot;
 
-import org.springframework.http.HttpInputMessage;
-import org.springframework.http.HttpOutputMessage;
+import com.ajaxjs.springboot.annotation.JsonMessage;
+import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.AbstractHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import java.io.IOException;
-
-/**
- * 统一返回结构
- */
-public class GlobalResponseResult extends AbstractHttpMessageConverter<Object> {
-    /**
-     * 对于 POST Raw Body 的识别，通常是 JSON
-     */
-    private static final MediaType CONTENT_TYPE = new MediaType("application", "json");
-
-    /**
-     * 对于 POST 标准表单的识别
-     */
-    private static final MediaType CONTENT_TYPE_FORM = new MediaType("application", "x-www-form-urlencoded");
-
-    /**
-     *
-     */
-    private static final MediaType CONTENT_TYPE_FORM2 = new MediaType("multipart", "form-data");
-
-    public GlobalResponseResult() {
-        super(CONTENT_TYPE, CONTENT_TYPE_FORM, CONTENT_TYPE_FORM2);
-    }
-
+public abstract class GlobalResponseResult implements ResponseBodyAdvice<Object> {
     @Override
-    protected boolean supports(Class<?> clazz) {
-//        System.out.println("s-------" + clazz);
+    public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
+        System.out.println("supports:" + returnType);
         return true;
     }
 
-    @Override
-    protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
-        System.out.println("readInternal-------" + clazz);
-        return null;
-    }
+    private static final String OK = "操作成功";
 
     @Override
-    protected void writeInternal(Object o, HttpOutputMessage outputMessage) throws HttpMessageNotWritableException {
-        System.out.println(o);
+    public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
+        ResponseResultWrapper responseResult = new ResponseResultWrapper();
+        responseResult.setStatus(1);
+
+        JsonMessage annotation = returnType.getMethod().getAnnotation(JsonMessage.class);
+
+        if (annotation != null)
+            responseResult.setMessage(annotation.value());
+         else
+            responseResult.setMessage(OK);
+
+        responseResult.setData(body);
+
+        return responseResult;
     }
 }

@@ -11,6 +11,7 @@ import java.util.Map;
 
 /**
  * 获得 Controller 方法名、请求参数和注解信息
+ *
  */
 @Slf4j
 public class ShowControllerInterceptor implements HandlerInterceptor {
@@ -23,7 +24,7 @@ public class ShowControllerInterceptor implements HandlerInterceptor {
             StringBuffer s = new StringBuffer();
             Map<String, String[]> parameterMap = request.getParameterMap();
 
-            if (parameterMap.size() > 0) {
+            if (!parameterMap.isEmpty()) {
                 for (String key : parameterMap.keySet())
                     s.append(key).append("=").append(Arrays.toString(parameterMap.get(key))).append("\n");
 

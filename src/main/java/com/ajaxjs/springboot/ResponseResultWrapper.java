@@ -3,7 +3,7 @@ package com.ajaxjs.springboot;
 import lombok.Data;
 
 @Data
-public class ResponseResult {
+public class ResponseResultWrapper {
     private Integer status;
 
     private Integer total;
